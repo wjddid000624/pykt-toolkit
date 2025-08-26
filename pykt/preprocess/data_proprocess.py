@@ -31,6 +31,8 @@ def process_raw_data(dataset_name,dname2paths):
         from .ednet_preprocess import read_data_from_csv
     elif dataset_name == "peiyou":
         from .aaai2022_competition import read_data_from_csv, load_q2c
+    elif dataset_name == "custom":
+        from .custom_preprocess import read_data_from_csv
     
     if dataset_name == "junyi2015":
         dq2c = load_q2c(readf.replace("junyi_ProblemLog_original.csv","junyi_Exercise_table.csv"))
@@ -41,6 +43,8 @@ def process_raw_data(dataset_name,dname2paths):
         read_data_from_csv(readf, writef, dq2c)
     elif dataset_name in ["ednet5w","ednet"]:
         dname, writef = read_data_from_csv(readf, writef, dataset_name=dataset_name)
+    elif dataset_name == "custom":
+        read_data_from_csv(os.path.join(dname, "train_valid.csv"), writef)
     elif dataset_name != "nips_task34":#default case
         read_data_from_csv(readf, writef)
     else:

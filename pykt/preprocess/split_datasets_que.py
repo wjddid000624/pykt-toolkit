@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import json, copy
 from .split_datasets import read_data,ALL_KEYS,ONE_KEYS,extend_multi_concepts,save_dcur
-from .split_datasets import train_test_split,KFold_split,calStatistics,get_max_concepts,id_mapping,write_config
+from .split_datasetsw import train_test_split,KFold_split,calStatistics,get_max_concepts,id_mapping,write_config
 
 
 def generate_sequences(df, effective_keys, min_seq_len=3, maxlen = 200, pad_val = -1):
