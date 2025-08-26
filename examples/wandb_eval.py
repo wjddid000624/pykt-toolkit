@@ -6,7 +6,9 @@ from pykt.config import que_type_models
 import torch
 torch.set_num_threads(2)
 
-from pykt.models import evaluate_splitpred_question, load_model, lpkt_evaluate_multi_ahead
+from pykt.models import evaluate_splitpred_question, load_model, lpkt_evaluate_multi_ahead, init_model, evaluate
+from pykt.datasets import init_test_datasets
+from pykt.utils import set_seed
 
 def main(params):
     if params['use_wandb'] ==1:
@@ -29,32 +31,95 @@ def main(params):
             model_config["seq_len"] = seq_len
         data_config = config["data_config"]
 
-
-
-    print(f"Start predicting model: {model_name}, embtype: {emb_type}, save_dir: {save_dir}, dataset_name: {dataset_name}")
+    print(f"Start evaluating model: {model_name}, embtype: {emb_type}, save_dir: {save_dir}, dataset_name: {dataset_name}")
     print(f"model_config: {model_config}")
     print(f"data_config: {data_config}")
-    use_pred = True if use_pred == 1 else False
-
-    model = load_model(model_name, model_config, data_config, emb_type, save_dir)
-
-    # for use_pred in [True, False]:
-    #     for ratio in [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
-    print(f"Start predict use_pred: {use_pred}, ratio: {ratio}...")
-    atkt_pad = True if params["atkt_pad"] == 1 else False
-    if model_name == "atkt":
-        save_test_path = os.path.join(save_dir, model.emb_type+"_test_ratio"+str(ratio)+"_"+str(use_pred)+"_"+str(atkt_pad)+"_predictions.txt")
+    
+    # Simple test evaluation mode (when use_pred=0 and ratio=0.9)
+    if use_pred == 0 and ratio == 0.9:
+        print("Running simple test evaluation...")
+        
+        # Set seed for reproducibility
+        set_seed(trained_params["seed"])
+        
+        # Load data config 
+        with open("../configs/data_config.json") as f:
+            all_data_config = json.load(f)
+        
+        # Update the custom dataset path to absolute path
+        if dataset_name == "custom":
+            abs_data_path = os.path.abspath("../data/custom")
+            all_data_config["custom"]["dpath"] = abs_data_path
+            data_config["dpath"] = abs_data_path
+        
+        # Prepare data config for init_test_datasets  
+        test_data_config = all_data_config[dataset_name].copy()
+        test_data_config["dataset_name"] = dataset_name
+        
+        # Use the test loader from init_test_datasets
+        test_loader, test_window_loader, test_question_loader, test_question_window_loader = init_test_datasets(test_data_config, model_name, batch_size=256)
+        
+        print(f"Test dataset loaded with {len(test_loader)} batches")
+        
+        # Initialize model
+        print("Initializing model...")
+        model = init_model(model_name, model_config=model_config, data_config=all_data_config[dataset_name], emb_type=emb_type)
+        
+        # Load trained weights
+        print("Loading trained model weights...")
+        model_path = os.path.join(save_dir, f"{emb_type}_model.ckpt")
+        net = torch.load(model_path, map_location="cpu")
+        model.load_state_dict(net)
+        
+        # Set to evaluation mode
+        model.eval()
+        print("Model loaded successfully!")
+        
+        # Evaluate model
+        print("Evaluating model performance...")
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        model.to(device)
+        
+        # Run evaluation
+        testauc, testacc = evaluate(model, test_loader, model_name, device)
+        
+        print("\\n" + "=" * 40)
+        print("EVALUATION RESULTS")
+        print("=" * 40)
+        print(f"Model: {model_name.upper()}")
+        print(f"Dataset: {dataset_name}")
+        print(f"Test AUC: {testauc:.4f}")
+        print(f"Test Accuracy: {testacc:.4f}")
+        print("=" * 40)
+        
+        dfinal = {
+            "testauc": testauc,
+            "testacc": testacc,
+            "model_name": model_name,
+            "dataset_name": dataset_name,
+            "emb_type": emb_type
+        }
+        
     else:
-        save_test_path = os.path.join(save_dir, model.emb_type+"_test_ratio"+str(ratio)+"_"+str(use_pred)+"_predictions.txt")
-    # model, testf, model_name, save_path="", use_pred=False, train_ratio=0.2
-    # testauc, testacc = evaluate_splitpred(model, test_loader, model_name, save_test_path)
-    testf = os.path.join(data_config["dpath"], params["test_filename"])
-    if model_name in que_type_models and model_name != "lpkt":
-        dfinal = model.evaluate_multi_ahead(data_config,batch_size=16,ob_portions=ratio,accumulative=use_pred)
-    elif model_name in ["lpkt"]:
-        dfinal = lpkt_evaluate_multi_ahead(model, data_config,batch_size=64,ob_portions=ratio,accumulative=use_pred)
-    else:
-        dfinal = evaluate_splitpred_question(model, data_config, testf, model_name, save_test_path, use_pred, ratio, atkt_pad)
+        # Original complex evaluation logic
+        use_pred = True if use_pred == 1 else False
+        model = load_model(model_name, model_config, data_config, emb_type, save_dir)
+
+        print(f"Start predict use_pred: {use_pred}, ratio: {ratio}...")
+        atkt_pad = True if params["atkt_pad"] == 1 else False
+        if model_name == "atkt":
+            save_test_path = os.path.join(save_dir, model.emb_type+"_test_ratio"+str(ratio)+"_"+str(use_pred)+"_"+str(atkt_pad)+"_predictions.txt")
+        else:
+            save_test_path = os.path.join(save_dir, model.emb_type+"_test_ratio"+str(ratio)+"_"+str(use_pred)+"_predictions.txt")
+        
+        testf = os.path.join(data_config["dpath"], params["test_filename"])
+        if model_name in que_type_models and model_name != "lpkt":
+            dfinal = model.evaluate_multi_ahead(data_config,batch_size=16,ob_portions=ratio,accumulative=use_pred)
+        elif model_name in ["lpkt"]:
+            dfinal = lpkt_evaluate_multi_ahead(model, data_config,batch_size=64,ob_portions=ratio,accumulative=use_pred)
+        else:
+            dfinal = evaluate_splitpred_question(model, data_config, testf, model_name, save_test_path, use_pred, ratio, atkt_pad)
+    
     for key in dfinal:
         print(key, dfinal[key])
     dfinal.update(config["params"])

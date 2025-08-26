@@ -18,7 +18,8 @@ dname2paths = {
     "junyi2015": "../data/junyi2015/junyi_ProblemLog_original.csv",
     "ednet": "../data/ednet/",
     "ednet5w": "../data/ednet/",
-    "peiyou": "../data/peiyou/grade3_students_b_200.csv"
+    "peiyou": "../data/peiyou/grade3_students_b_200.csv",
+    "custom": "../data/custom/train_valid.csv"
 }
 configf = "../configs/data_config.json"
 
