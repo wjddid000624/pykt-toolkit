@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 import os
+import logging
 
 from .dkt import DKT
 from .dkt_plus import DKTPlus
@@ -20,22 +21,12 @@ from .skvmn import SKVMN
 from .hawkes import HawkesKT
 from .iekt import IEKT
 from .atdkt import ATDKT
-try:
-    from .simplekt import simpleKT
-    print("Successfully imported simpleKT")
-except Exception as e:
-    print(f"Failed to import simpleKT: {e}")
-    simpleKT = None
+from .simplekt import simpleKT
 from .datakt import BAKTTime
 from .qdkt import QDKT
 from .qikt import QIKT
 from .dimkt import DIMKT
-try:
-    from .sparsekt import sparseKT
-    print("Successfully imported sparseKT")
-except Exception as e:
-    print(f"Failed to import sparseKT: {e}")
-    sparseKT = None
+from .sparsekt import sparseKT
 from .rkt import RKT
 from .folibikt import folibiKT
 from .dtransformer import DTransformer
@@ -52,8 +43,6 @@ from .robustkt import Robustkt
 device = "cpu" if not torch.cuda.is_available() else "cuda"
 
 def init_model(model_name, model_config, data_config, emb_type):
-    print(f"init_model called with model_name: {model_name}")
-    print(f"Available model classes: simpleKT={simpleKT is not None}, sparseKT={sparseKT is not None}")
     if model_name == "dkt":
         model = DKT(data_config["num_c"], **model_config, emb_type=emb_type, emb_path=data_config["emb_path"]).to(device)
     elif model_name == "dkt+":
@@ -129,16 +118,7 @@ def init_model(model_name, model_config, data_config, emb_type):
     elif model_name == "datakt":
         model = BAKTTime(data_config["num_c"], data_config["num_q"], data_config["num_rgap"], data_config["num_sgap"], data_config["num_pcount"], **model_config, emb_type=emb_type, emb_path=data_config["emb_path"]).to(device)
     elif model_name == "simplekt":
-        print(f"Creating simpleKT model with: num_c={data_config['num_c']}, num_q={data_config['num_q']}, emb_type={emb_type}")
-        print(f"model_config: {model_config}")
-        try:
-            model = simpleKT(data_config["num_c"], data_config["num_q"], **model_config, emb_type=emb_type, emb_path=data_config["emb_path"]).to(device)
-            print(f"simpleKT model created successfully: {model is not None}")
-        except Exception as e:
-            print(f"Error creating simpleKT model: {e}")
-            import traceback
-            traceback.print_exc()
-            return None
+        model = simpleKT(data_config["num_c"], data_config["num_q"], **model_config, emb_type=emb_type, emb_path=data_config["emb_path"]).to(device)
     elif model_name == "rekt":
         model = ReKT(data_config["num_c"], data_config["num_q"], **model_config, emb_type=emb_type).to(device)
     elif model_name == "stablekt":

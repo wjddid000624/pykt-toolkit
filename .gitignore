@@ -66,3 +66,4 @@ examples/models/
 
 */__pycache__
 data/.DS_Store
+data/custom/*.npz
