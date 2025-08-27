@@ -28,7 +28,10 @@ def main(params):
 
     if params['use_wandb']==1:
         import wandb
-        wandb.init()
+        run_name = f"{params['model_name']}_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        wandb.init(
+            name=run_name
+        )
 
     set_seed(params["seed"])
     model_name, dataset_name, fold, emb_type, save_dir = params["model_name"], params["dataset_name"], \

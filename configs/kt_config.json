@@ -102,5 +102,57 @@
     },
     "dimkt":{
         "dropout":0.2  
+    },
+    "simplekt": {
+        "learning_rate": 1e-4,
+        "d_model": 256,
+        "n_blocks": 2,
+        "dropout": 0.1,
+        "d_ff": 256,
+        "loss1": 0.5,
+        "loss2": 0.5,
+        "loss3": 0.5,
+        "start": 50,
+        "num_layers": 2,
+        "nheads": 4,
+        "final_fc_dim": 512,
+        "final_fc_dim2": 256,
+        "num_attn_heads": 8
+    },
+    "sparsekt": {
+        "learning_rate": 1e-4,
+        "d_model": 256,
+        "n_blocks": 2,
+        "dropout": 0.1,
+        "d_ff": 256,
+        "loss1": 0.5,
+        "loss2": 0.5,
+        "loss3": 0.5,
+        "start": 50,
+        "num_layers": 2,
+        "nheads": 4,
+        "final_fc_dim": 512,
+        "final_fc_dim2": 256,
+        "num_attn_heads": 8
+    },
+    "stablekt": {
+        "learning_rate": 1e-4,
+        "d_model": 256,
+        "n_blocks": 2,
+        "dropout": 0.1,
+        "d_ff": 256,
+        "loss1": 0.5,
+        "loss2": 0.5,
+        "loss3": 0.5,
+        "start": 50,
+        "num_layers": 2,
+        "nheads": 4,
+        "final_fc_dim": 512,
+        "final_fc_dim2": 256,
+        "num_attn_heads": 8,
+        "r": 1,
+        "gamma": 1,
+        "num_buckets": 32,
+        "max_distance": 100
     }
 }
