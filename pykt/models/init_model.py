@@ -4,6 +4,7 @@ import os
 import logging
 
 from .dkt import DKT
+from .dkt2 import DKT2
 from .dkt_plus import DKTPlus
 from .dkvmn import DKVMN
 from .deep_irt import DeepIRT
@@ -45,6 +46,8 @@ device = "cpu" if not torch.cuda.is_available() else "cuda"
 def init_model(model_name, model_config, data_config, emb_type):
     if model_name == "dkt":
         model = DKT(data_config["num_c"], **model_config, emb_type=emb_type, emb_path=data_config["emb_path"]).to(device)
+    elif model_name == "dkt2":
+        model = DKT2(data_config["num_c"], **model_config, emb_type=emb_type, emb_path=data_config["emb_path"]).to(device)
     elif model_name == "dkt+":
         model = DKTPlus(data_config["num_c"], **model_config, emb_type=emb_type, emb_path=data_config["emb_path"]).to(device)
     elif model_name == "dkvmn":

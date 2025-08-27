@@ -48,6 +48,8 @@ def main(params):
             train_config["batch_size"] = 64 ## because of OOM
         if model_name in ["gkt"]:
             train_config["batch_size"] = 16 
+        if model_name in ["dkt2"]:
+            train_config["batch_size"] = 32  ## optimized for DKT2 
         if model_name in ["qdkt","qikt"] and dataset_name in ['algebra2005','bridge2algebra2006']:
             train_config["batch_size"] = 32 
         if model_name in ["dtransformer"]:

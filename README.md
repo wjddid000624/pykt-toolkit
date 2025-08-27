@@ -115,4 +115,7 @@ sbatch --qos="big_qos" --partition="big_suma_rtx3090" --gres=gpu:1 --job-name=SI
 sbatch --qos="big_qos" --partition="big_suma_rtx3090" --gres=gpu:1 --job-name=STABLEKT --output=logs/stdout/stablekt_log_%j.out ./shell_scripts/stablekt.sh
 sbatch --qos="big_qos" --partition="big_suma_rtx3090" --gres=gpu:1 --job-name=ROBUSTKT --output=logs/stdout/robustkt_log_%j.out ./shell_scripts/robustkt.sh
 
+4090도 터짐
 sbatch --qos="big_qos" --partition="suma_a6000" --gres=gpu:1 --job-name=GKT --output=logs/stdout/gkt_log_%j.out ./shell_scripts/gkt.sh
+
+sbatch --qos="big_qos" --partition="big_suma_rtx3090" --gres=gpu:1 --job-name=DKT2 --output=logs/stdout/dkt2_log_%j.out ./shell_scripts/dkt2.sh

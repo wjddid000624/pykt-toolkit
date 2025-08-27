@@ -17,6 +17,10 @@
         "lambda_w1": 1.0,
         "lambda_w2": 10.0
     },
+    "dkt2": {
+        "learning_rate": 1e-3,
+        "emb_size": 200
+    },
     "dkvmn": {
         "learning_rate": 1e-3,
         "dim_s": 200,
