@@ -52,6 +52,12 @@ def cal_loss(model, ys, r, rshft, sm, preloss=[]):
         y = torch.masked_select(ys[0], sm)
         t = torch.masked_select(rshft, sm)
         loss = binary_cross_entropy(y.double(), t.double())
+    elif model_name in ["diskt"]:
+        # DisKT output has shape [batch, seq_len-1], so adjust mask accordingly
+        sm_diskt = sm[:, 1:]  # Remove first timestep from mask to match DisKT output
+        y = torch.masked_select(ys[0], sm_diskt)
+        t = torch.masked_select(rshft[:, 1:], sm_diskt)
+        loss = binary_cross_entropy(y.double(), t.double())
     elif model_name == "dkt+":
         y_curr = torch.masked_select(ys[1], sm)
         y_next = torch.masked_select(ys[0], sm)
@@ -202,6 +208,11 @@ def model_forward(model, data, rel=None):
     elif model_name in ["dkt2"]:
         y = model(c.long(), r.long())
         y = (y * one_hot(cshft.long(), model.num_c)).sum(-1)
+        ys.append(y)
+    elif model_name in ["diskt"]:
+        y = model(c.long(), r.long())
+        # DisKT returns predictions without first timestep, so adjust cshft accordingly
+        y = (y * one_hot(cshft[:, 1:].long(), model.num_c)).sum(-1)
         ys.append(y)
     elif model_name == "dkt+":
         y = model(c.long(), r.long())

@@ -13,6 +13,7 @@ from pykt.config import que_type_models
 from .dimkt_dataloader import DIMKTDataset
 from .que_data_loader_promptkt import KTQueDataset_promptKT
 from .pretrain_utils import get_pretrain_data
+from .diskt_dataloader import DisKTDataset, DisKTAugmentedDataset
 
 
 def init_test_datasets(data_config, model_name, batch_size, diff_level=None, args=None, re_mapping=False):
@@ -101,6 +102,13 @@ def init_test_datasets(data_config, model_name, batch_size, diff_level=None, arg
         if "test_question_file" in data_config:
             test_question_dataset = DIMKTDataset(data_config["dpath"],os.path.join(data_config["dpath"], data_config["test_question_file"]), data_config["input_type"], {-1}, True, diff_level=diff_level)
             test_question_window_dataset = DIMKTDataset(data_config["dpath"],os.path.join(data_config["dpath"], data_config["test_question_window_file"]), data_config["input_type"], {-1}, True, diff_level=diff_level)
+    elif model_name in ["diskt"]:
+        seq_len = data_config.get("seq_len", 200)
+        test_dataset = DisKTDataset(os.path.join(data_config["dpath"], data_config["test_file"]), data_config["input_type"], {-1}, seq_len=seq_len)
+        test_window_dataset = DisKTDataset(os.path.join(data_config["dpath"], data_config["test_window_file"]), data_config["input_type"], {-1}, seq_len=seq_len)
+        if "test_question_file" in data_config:
+            test_question_dataset = DisKTDataset(os.path.join(data_config["dpath"], data_config["test_question_file"]), data_config["input_type"], {-1}, seq_len=seq_len, qtest=True)
+            test_question_window_dataset = DisKTDataset(os.path.join(data_config["dpath"], data_config["test_question_window_file"]), data_config["input_type"], {-1}, seq_len=seq_len, qtest=True)
     else:
         test_dataset = KTDataset(os.path.join(data_config["dpath"], data_config["test_file"]), data_config["input_type"], {-1})
         test_window_dataset = KTDataset(os.path.join(data_config["dpath"], data_config["test_window_file"]), data_config["input_type"], {-1})
@@ -202,6 +210,14 @@ def init_dataset4train(dataset_name, model_name, data_config, i, batch_size, dif
     elif model_name == "dimkt":
         curvalid = DIMKTDataset(data_config["dpath"],os.path.join(data_config["dpath"], data_config["train_valid_file"]), data_config["input_type"], {i}, diff_level=diff_level)
         curtrain = DIMKTDataset(data_config["dpath"],os.path.join(data_config["dpath"], data_config["train_valid_file"]), data_config["input_type"], all_folds - {i}, diff_level=diff_level)
+    elif model_name == "diskt":
+        seq_len = data_config.get("seq_len", 200)
+        curvalid = DisKTDataset(os.path.join(data_config["dpath"], data_config["train_valid_file"]), data_config["input_type"], {i}, seq_len=seq_len)
+        curtrain = DisKTDataset(os.path.join(data_config["dpath"], data_config["train_valid_file"]), data_config["input_type"], all_folds - {i}, seq_len=seq_len)
+        
+        # Use augmented dataset for training to enhance contradiction detection
+        if args and hasattr(args, 'use_augmentation') and args.use_augmentation:
+            curtrain = DisKTAugmentedDataset(curtrain)
     else:
         curvalid = KTDataset(os.path.join(data_config["dpath"], data_config["train_valid_file"]), data_config["input_type"], {i})
         curtrain = KTDataset(os.path.join(data_config["dpath"], data_config["train_valid_file"]), data_config["input_type"], all_folds - {i})

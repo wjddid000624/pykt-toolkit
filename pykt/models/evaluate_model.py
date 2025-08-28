@@ -10,6 +10,32 @@ import csv
 
 device = "cpu" if not torch.cuda.is_available() else "cuda"
 
+def safe_one_hot_multiply(y, cshft, model_num_c):
+    """Safely compute one_hot multiplication, handling cases where cshft max exceeds model_num_c"""
+    # Align sequence dimensions - if y has been sliced (e.g., y[:,1:]), slice cshft accordingly
+    if y.size(1) != cshft.size(1):
+        if y.size(1) == cshft.size(1) - 1:
+            # y was sliced to remove first timestep, slice cshft the same way
+            cshft = cshft[:, 1:]
+        elif cshft.size(1) == y.size(1) - 1:
+            # cshft was sliced to remove first timestep, slice y the same way
+            y = y[:, 1:]
+        else:
+            # Other mismatches - take minimum length
+            min_len = min(y.size(1), cshft.size(1))
+            y = y[:, :min_len]
+            cshft = cshft[:, :min_len]
+    
+    max_concept = cshft.max().item()
+    num_classes = max(model_num_c, max_concept + 1)
+    
+    # Pad y if needed to match one_hot dimensions
+    if y.size(-1) < num_classes:
+        padding = num_classes - y.size(-1)
+        y = torch.nn.functional.pad(y, (0, padding))
+    
+    return (y * one_hot(cshft.long(), num_classes)).sum(-1)
+
 def save_cur_predict_result(dres, q, r, d, t, m, sm, p):
     # dres, q, r, qshft, rshft, m, sm, y
     results = []
@@ -103,6 +129,9 @@ def evaluate(model, test_loader, model_name, rel=None, save_path=""):
             elif model_name in ["dkt", "dkt+", "dkt2"]:
                 y = model(c.long(), r.long())
                 y = (y * one_hot(cshft.long(), model.num_c)).sum(-1)
+            elif model_name in ["diskt"]:
+                y = model(c.long(), r.long())
+                y = safe_one_hot_multiply(y, cshft, model.num_c)
             elif model_name in ["dkt_forget"]:
                 y = model(c.long(), r.long(), dgaps)
                 y = (y * one_hot(cshft.long(), model.num_c)).sum(-1)
@@ -153,6 +182,20 @@ def evaluate(model, test_loader, model_name, rel=None, save_path=""):
             if save_path != "":
                 result = save_cur_predict_result(dres, c, r, cshft, rshft, m, sm, y)
                 fout.write(result+"\n")
+
+            # Align y and sm dimensions for models that remove first timestep
+            if model_name in ["diskt"] and y.size(1) != sm.size(1):
+                if y.size(1) == sm.size(1) - 1:
+                    sm = sm[:, 1:]  # Remove first timestep from mask to match y
+                    rshft = rshft[:, 1:]  # Also adjust rshft to match
+                elif sm.size(1) == y.size(1) - 1:
+                    y = y[:, 1:]  # Remove first timestep from y to match sm
+                else:
+                    # Take minimum length to avoid further mismatches
+                    min_len = min(y.size(1), sm.size(1))
+                    y = y[:, :min_len]
+                    sm = sm[:, :min_len]
+                    rshft = rshft[:, :min_len]
 
             y = torch.masked_select(y, sm).detach().cpu()
             # print(f"pred_results:{y}")  
@@ -461,6 +504,10 @@ def evaluate_question(model, test_loader, model_name, fusion_type=["early_fusion
             elif model_name in ["dkt", "dkt+", "dkt2"]:
                 y = model(c.long(), r.long())
                 y = (y * one_hot(cshft.long(), model.num_c)).sum(-1)
+            elif model_name in ["diskt"]:
+                y = model(c.long(), r.long())
+                # For DisKT, use safe multiplication to handle dimension mismatches
+                y = safe_one_hot_multiply(y, cshft, model.num_c)
             elif model_name in ["dkt_forget"]:
                 y = model(c.long(), r.long(), dgaps)
                 y = (y * one_hot(cshft.long(), model.num_c)).sum(-1)

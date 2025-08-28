@@ -5,6 +5,7 @@ import logging
 
 from .dkt import DKT
 from .dkt2 import DKT2
+from .diskt import DisKT
 from .dkt_plus import DKTPlus
 from .dkvmn import DKVMN
 from .deep_irt import DeepIRT
@@ -48,6 +49,14 @@ def init_model(model_name, model_config, data_config, emb_type):
         model = DKT(data_config["num_c"], **model_config, emb_type=emb_type, emb_path=data_config["emb_path"]).to(device)
     elif model_name == "dkt2":
         model = DKT2(data_config["num_c"], **model_config, emb_type=emb_type, emb_path=data_config["emb_path"]).to(device)
+    elif model_name == "diskt":
+        # DisKT needs additional parameters
+        diskt_config = model_config.copy()
+        diskt_config.update({
+            "num_q": data_config.get("num_q", 0),  # Number of questions
+            "seq_len": data_config.get("seq_len", 200)  # Sequence length
+        })
+        model = DisKT(data_config["num_c"], **diskt_config, emb_type=emb_type, emb_path=data_config["emb_path"]).to(device)
     elif model_name == "dkt+":
         model = DKTPlus(data_config["num_c"], **model_config, emb_type=emb_type, emb_path=data_config["emb_path"]).to(device)
     elif model_name == "dkvmn":
