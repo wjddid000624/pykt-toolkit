@@ -28,7 +28,7 @@ def main(params):
 
     if params['use_wandb']==1:
         import wandb
-        run_name = f"{params['model_name']}_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        run_name = f"{params['model_name']}_lr1e4_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}"
         wandb.init(
             name=run_name
         )
@@ -43,15 +43,15 @@ def main(params):
         config = json.load(f)
         train_config = config["train_config"]
         if model_name in ["dkvmn","deep_irt", "sakt", "saint","saint++", "akt", "robustkt", "folibikt", "atkt", "lpkt", "skvmn", "dimkt"]:
-            train_config["batch_size"] = 64 ## because of OOM
+            train_config["batch_size"] = 16 ## because of OOM
         if model_name in ["simplekt","stablekt", "datakt", "sparsekt"]:
-            train_config["batch_size"] = 64 ## because of OOM
+            train_config["batch_size"] = 16 ## because of OOM
         if model_name in ["gkt"]:
             train_config["batch_size"] = 2 
         if model_name in ["dkt2"]:
-            train_config["batch_size"] = 32  ## optimized for DKT2 
+            train_config["batch_size"] = 16  ## optimized for DKT2 
         if model_name in ["diskt"]:
-            train_config["batch_size"] = 32  ## optimized for DisKT 
+            train_config["batch_size"] = 16  ## optimized for DisKT 
         if model_name in ["qdkt","qikt"] and dataset_name in ['algebra2005','bridge2algebra2006']:
             train_config["batch_size"] = 32 
         if model_name in ["dtransformer"]:
@@ -101,7 +101,7 @@ def main(params):
         del model_config['weight_decay']
 
     save_config(train_config, model_config, data_config[dataset_name], params, ckpt_path)
-    learning_rate = params["learning_rate"]
+    learning_rate = 1e-4
     for remove_item in ['use_wandb','learning_rate','add_uuid','l2']:
         if remove_item in model_config:
             del model_config[remove_item]

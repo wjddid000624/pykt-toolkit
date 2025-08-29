@@ -103,21 +103,19 @@ sbatch --qos="base_qos" --partition="base_suma_rtx3090" --gres=gpu:1 --job-name=
 sbatch --qos="base_qos" --partition="base_suma_rtx3090" --gres=gpu:1 --job-name=EVAL --output=logs/stdout/eval_log_%j.out ./shell_scripts/eval.sh
 
 
-sbatch --qos="big_qos" --partition="suma_rtx4090" --gres=gpu:1 --job-name=AKT --output=logs/stdout/akt_log_%j.out ./shell_scripts/akt.sh
-sbatch --qos="big_qos" --partition="big_suma_rtx3090" --gres=gpu:1 --job-name=SAKT --output=logs/stdout/sakt_log_%j.out ./shell_scripts/sakt.sh
-sbatch --qos="big_qos" --partition="big_suma_rtx3090" --gres=gpu:1 --job-name=DKT --output=logs/stdout/dkt_log_%j.out ./shell_scripts/dkt.sh
-sbatch --qos="big_qos" --partition="big_suma_rtx3090" --gres=gpu:1 --job-name=DKT_PLUS --output=logs/stdout/dkt_plus_log_%j.out ./shell_scripts/dkt_plus.sh
-sbatch --qos="big_qos" --partition="big_suma_rtx3090" --gres=gpu:1 --job-name=DKT_FORGET --output=logs/stdout/dkt_forget_log_%j.out ./shell_scripts/dkt_forget.sh
-sbatch --qos="big_qos" --partition="big_suma_rtx3090" --gres=gpu:1 --job-name=DKVMN --output=logs/stdout/dkvmn_log_%j.out ./shell_scripts/dkvmn.sh
-sbatch --qos="big_qos" --partition="big_suma_rtx3090" --gres=gpu:1 --job-name=SKVMN --output=logs/stdout/skvmn_log_%j.out ./shell_scripts/skvmn.sh
-sbatch --qos="big_qos" --partition="big_suma_rtx3090" --gres=gpu:1 --job-name=SAINT --output=logs/stdout/saint_log_%j.out ./shell_scripts/saint.sh
-sbatch --qos="big_qos" --partition="big_suma_rtx3090" --gres=gpu:1 --job-name=SIMPLEKT --output=logs/stdout/simplekt_log_%j.out ./shell_scripts/simplekt.sh
-sbatch --qos="big_qos" --partition="big_suma_rtx3090" --gres=gpu:1 --job-name=STABLEKT --output=logs/stdout/stablekt_log_%j.out ./shell_scripts/stablekt.sh
-sbatch --qos="big_qos" --partition="big_suma_rtx3090" --gres=gpu:1 --job-name=ROBUSTKT --output=logs/stdout/robustkt_log_%j.out ./shell_scripts/robustkt.sh
-sbatch --qos="big_qos" --partition="big_suma_rtx3090" --gres=gpu:1 --job-name=DKT2 --output=logs/stdout/dkt2_log_%j.out ./shell_scripts/dkt2.sh
+sbatch --qos="base_qos" --partition="base_suma_rtx3090" --gres=gpu:1 --job-name=AKT --output=logs/stdout_lr1e5/akt_log_%j.out ./shell_scripts/akt.sh
+sbatch --qos="base_qos" --partition="base_suma_rtx3090" --gres=gpu:1 --job-name=ATKT --output=logs/stdout/atkt_log_%j.out ./shell_scripts/atkt.sh
 
-
-4090도 터짐
-sbatch --qos="big_qos" --partition="big_suma_rtx3090" --gres=gpu:1 --job-name=GKT --output=logs/stdout/gkt_log_%j.out ./shell_scripts/gkt.sh
-
-sbatch --qos="big_qos" --partition="big_suma_rtx3090" --gres=gpu:1 --job-name=DISKT --output=logs/stdout/diskt_log_%j.out ./shell_scripts/diskt.sh
+sbatch --qos="base_qos" --partition="base_suma_rtx3090" --gres=gpu:1 --job-name=SAKT --output=logs/stdout_lr1e5/sakt_log_%j.out ./shell_scripts/sakt.sh
+sbatch --qos="base_qos" --partition="base_suma_rtx3090" --gres=gpu:1 --job-name=DKT --output=logs/stdout_lr1e5/dkt_log_%j.out ./shell_scripts/dkt.sh
+sbatch --qos="base_qos" --partition="base_suma_rtx3090" --gres=gpu:1 --job-name=DKT_PLUS --output=logs/stdout_lr1e5/dkt_plus_log_%j.out ./shell_scripts/dkt_plus.sh
+sbatch --qos="big_qos" --partition="suma_rtx4090" --gres=gpu:1 --job-name=DKT_FORGET --output=logs/stdout_lr1e5/dkt_forget_log_%j.out ./shell_scripts/dkt_forget.sh
+sbatch --qos="base_qos" --partition="base_suma_rtx3090" --gres=gpu:1 --job-name=DKVMN --output=logs/stdout_lr1e5/dkvmn_log_%j.out ./shell_scripts/dkvmn.sh
+sbatch --qos="big_qos" --partition="suma_rtx4090" --gres=gpu:1 --job-name=SKVMN --output=logs/stdout_lr1e5/skvmn_log_%j.out ./shell_scripts/skvmn.sh
+sbatch --qos="base_qos" --partition="base_suma_rtx3090" --gres=gpu:1 --job-name=SAINT --output=logs/stdout_lr1e5/saint_log_%j.out ./shell_scripts/saint.sh
+sbatch --qos="base_qos" --partition="base_suma_rtx3090" --gres=gpu:1 --job-name=SIMPLEKT --output=logs/stdout_lr1e5/simplekt_log_%j.out ./shell_scripts/simplekt.sh
+sbatch --qos="base_qos" --partition="base_suma_rtx3090" --gres=gpu:1 --job-name=STABLEKT --output=logs/stdout_lr1e5/stablekt_log_%j.out ./shell_scripts/stablekt.sh
+sbatch --qos="base_qos" --partition="base_suma_rtx3090" --gres=gpu:1 --job-name=ROBUSTKT --output=logs/stdout_lr1e5/robustkt_log_%j.out ./shell_scripts/robustkt.sh
+sbatch --qos="base_qos" --partition="base_suma_rtx3090" --gres=gpu:1 --job-name=DKT2 --output=logs/stdout_lr1e5/dkt2_log_%j.out ./shell_scripts/dkt2.sh
+sbatch --qos="base_qos" --partition="base_suma_rtx3090" --gres=gpu:1 --job-name=DISKT --output=logs/stdout_lr1e5/diskt_log_%j.out ./shell_scripts/diskt.sh
+sbatch --qos="big_qos" --partition="suma_rtx4090" --gres=gpu:2 --job-name=GKT --output=logs/stdout_lr1e5/gkt_log_%j.out ./shell_scripts/gkt.sh

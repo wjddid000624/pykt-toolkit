@@ -79,6 +79,37 @@ class DisKT(nn.Module):
         self.loss_fn = nn.BCELoss(reduction="mean")
         self.reset()
 
+    def _create_counter_mask(self, responses, skills):
+        """Create counter attention mask to identify contradictory behaviors"""
+        batch_size, seq_len = responses.shape
+        counter_mask = torch.zeros_like(responses)
+        
+        # Vectorized approach to identify potential guessing/mistake patterns
+        valid_mask = (responses > -1).float()
+        
+        # Simple heuristic: identify positions where response pattern changes
+        # This approximates the original counter_kt_seqs logic
+        for i in range(1, seq_len):
+            if i >= 2:
+                # Look at recent performance trend
+                recent_responses = responses[:, max(0, i-3):i]
+                recent_valid = valid_mask[:, max(0, i-3):i]
+                
+                # Calculate recent success rate
+                recent_sum = (recent_responses * recent_valid).sum(dim=1, keepdim=True)
+                recent_count = recent_valid.sum(dim=1, keepdim=True) + 1e-8
+                recent_rate = recent_sum / recent_count
+                
+                # Current response
+                curr_response = responses[:, i:i+1].float()
+                curr_valid = valid_mask[:, i:i+1]
+                
+                # If current response contradicts recent trend, mark it
+                contradiction = torch.abs(curr_response - recent_rate) > 0.5
+                counter_mask[:, i:i+1] = (contradiction * curr_valid).long()
+        
+        return counter_mask
+
     def reset(self):
         for p in self.parameters():
             if p.size(0) == self.num_questions+1 and self.num_questions > 0:
@@ -130,7 +161,8 @@ class DisKT(nn.Module):
             # Create default masks
             batch_size, seq_len = q.shape
             attention_mask = torch.ones_like(r)
-            counter_attention_mask = torch.zeros_like(r)
+            # Create counter attention mask to identify potential contradictory behaviors
+            counter_attention_mask = self._create_counter_mask(r, q)
         
         masked_r = r_seq * (r_seq > -1).long()
 
@@ -160,6 +192,8 @@ class DisKT(nn.Module):
         # Return predictions for each time step
         y = preds[:, 1:].contiguous()  # Remove first prediction, shape: (batch, seq_len-1, num_c)
         
+        self._reg_loss = reg_loss
+
         return y
 
     def loss(self, feed_dict, out_dict):

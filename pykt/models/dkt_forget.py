@@ -43,9 +43,9 @@ class DKTForget(Module):
 class CIntegration(Module):
     def __init__(self, num_rgap, num_sgap, num_pcount, emb_dim) -> None:
         super().__init__()
-        self.rgap_eye = torch.eye(num_rgap)
-        self.sgap_eye = torch.eye(num_sgap)
-        self.pcount_eye = torch.eye(num_pcount)
+        self.register_buffer('rgap_eye', torch.eye(num_rgap))
+        self.register_buffer('sgap_eye', torch.eye(num_sgap))
+        self.register_buffer('pcount_eye', torch.eye(num_pcount))
 
         ntotal = num_rgap + num_sgap + num_pcount
         self.cemb = Linear(ntotal, emb_dim, bias=False)
@@ -53,7 +53,7 @@ class CIntegration(Module):
         # print(f"total: {ntotal}, self.cemb.weight: {self.cemb.weight.shape}")
 
     def forward(self, vt, rgap, sgap, pcount):
-        rgap, sgap, pcount = self.rgap_eye[rgap].to(device), self.sgap_eye[sgap].to(device), self.pcount_eye[pcount].to(device)
+        rgap, sgap, pcount = self.rgap_eye[rgap], self.sgap_eye[sgap], self.pcount_eye[pcount]
         # print(f"vt: {vt.shape}, rgap: {rgap.shape}, sgap: {sgap.shape}, pcount: {pcount.shape}")
         ct = torch.cat((rgap, sgap, pcount), -1) # bz * seq_len * num_fea
         # print(f"ct: {ct.shape}, self.cemb.weight: {self.cemb.weight.shape}")
